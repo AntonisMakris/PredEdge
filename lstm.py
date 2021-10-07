@@ -88,7 +88,8 @@ def split_sequence(seq, steps, out):
 X_train, Y_train = split_sequence(train, n_past, n_future)
 X_test, Y_test = split_sequence(test, n_past, n_future)
 X_train = X_train.reshape((Y_train.shape[0], X_train.shape[1], features))
-#print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
+
+print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
 
 
@@ -96,16 +97,16 @@ model = Sequential()
 model.add(LSTM(100, input_shape=(X_train.shape[1], X_train.shape[2]),return_sequences=False))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
-history = model.fit(X_train, Y_train, epochs=1000, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
+history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
                     verbose=1, shuffle=False)
 
 
 
-yhat = model.predict(X_train)
+yhat = model.predict(X_test)
 prediction_copies = np.repeat(yhat, df_for_training.shape[1], axis=-1) # https://stackoverflow.com/questions/42997228/lstm-keras-error-valueerror-non-broadcastable-output-operand-with-shape-67704
 y_pred_future = scaler.inverse_transform(prediction_copies)[:,0]
 
-prediction_copies_Actual = np.repeat(Y_train, df_for_training.shape[1], axis=-1)
+prediction_copies_Actual = np.repeat(Y_test, df_for_training.shape[1], axis=-1)
 y_actual = scaler.inverse_transform(prediction_copies_Actual)[:,0]
 
 

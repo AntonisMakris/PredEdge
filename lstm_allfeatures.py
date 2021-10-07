@@ -111,11 +111,11 @@ history = model.fit(trainX, trainY, epochs=1000, batch_size=100, validation_data
 
 # yhat = model.predict(testX)
 
-yhat = model.predict(trainX)
+yhat = model.predict(testX)
 prediction_copies = np.repeat(yhat, df_for_training.shape[1], axis=-1) # https://stackoverflow.com/questions/42997228/lstm-keras-error-valueerror-non-broadcastable-output-operand-with-shape-67704
 y_pred_future = scaler.inverse_transform(prediction_copies)[:,0]
 
-prediction_copies_Actual = np.repeat(trainY, df_for_training.shape[1], axis=-1)
+prediction_copies_Actual = np.repeat(testY, df_for_training.shape[1], axis=-1)
 y_actual = scaler.inverse_transform(prediction_copies_Actual)[:,0]
 
 
