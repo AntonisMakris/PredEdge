@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,97 +27,85 @@ import sys
 df = pd.read_csv('dataset.csv')
 # print(df.head())
 
-#Separate dates for future plotting
-train_dates = pd.to_datetime(df['timestamp'])
 
-#Variables for training
+
+# Variables for training
 cols = list(df)[1:4]
 
 print(cols)
 
-#New dataframe with only training data - 5 columns
+# New dataframe with only training data
 df_for_training = df[cols].astype(float)
 
-#Use heatmap to see corelation between variables
+# Use heatmap to see corelation between variables
 # sns.heatmap(df.corr(),annot=True,cmap='viridis')
 # plt.title('Heatmap of co-relation between variables',fontsize=16)
 # plt.show()
 
 
 
-#dataset = df_for_training.disk_io.values
-#dataset = df_for_training.values
-#dataset = np.reshape(dataset, (-1, 1))
+# dataset = df_for_training.disk_io.values
+# dataset = df_for_training.values
+# dataset = np.reshape(dataset, (-1, 1))
+
 scaler = MinMaxScaler(feature_range=(0, 1))
 df_for_training_scaled = scaler.fit_transform(df_for_training)
-
-train_size = int(len(df_for_training_scaled) * 0.70)
+train_size = int(len(df_for_training_scaled) * 0.80)
 test_size = len(df_for_training_scaled) - train_size
-train, test = df_for_training_scaled[0:train_size,:], df_for_training_scaled[train_size:len(df_for_training),:] #dataset for len if I keep the dataset
+train, test = df_for_training_scaled[0:train_size,:], df_for_training_scaled[train_size:len(df_for_training),:]
 
-print("len(train-test)",len(train), len(test))
+print("Length (train-test)",len(train), len(test))
 
-#As required for LSTM networks, we require to reshape an input data into n_samples x timesteps x n_features.
-#In this example, the n_features is 5. We will make timesteps = 14 (past days data used for training).
+X_train = []
+Y_train = []
+X_test = []
+Y_test = []
 
-trainX = []
-trainY = []
-testX = []
-testY = []
+n_future = 1   # Number of days we want to look into the future based on the past days. -> # out
+n_past = 14    # Number of past days we want to use to predict the future. -> #step
+features = 3   # Number of features
 
-n_future = 1   # Number of days we want to look into the future based on the past days.
-n_past = 14  # Number of past days we want to use to predict the future.
+# x ram bandwodth
+# y cpu
 
-#Reformat input data into a shape: (n_samples x timesteps x n_features)
-#In my example, my df_for_training_scaled has a shape (12823, 5)
-#12823 refers to the number of data points and 5 refers to the columns (multi-variables).
-for i in range(n_past, len(df_for_training_scaled) - n_future +1):
-    trainX.append(df_for_training_scaled[i - n_past:i, 0:df_for_training.shape[1]])
-    trainY.append(df_for_training_scaled[i + n_future - 1:i + n_future, 0])
+def column(matrix, i):
+    return [row[i] for row in matrix]
 
-for i in range(n_past, len(df_for_training_scaled) - n_future +1):
-    testX.append(df_for_training_scaled[i - n_past:i, 0:df_for_training.shape[1]])
-    testY.append(df_for_training_scaled[i + n_future - 1:i + n_future, 0])
-
-trainX, trainY = np.array(trainX), np.array(trainY)
-
-print('trainX shape == {}.'.format(trainX.shape))
-print('trainY shape == {}.'.format(trainY.shape))
-print ('-----------------------------------------')
-
-testX, testY = np.array(testX), np.array(testY)
-
-print('testX shape == {}.'.format(testX.shape))
-print('testY shape == {}.'.format(testY.shape))
-
-# train_X = trainX.reshape((trainX.shape[0], 14, trainX.shape[2]))
-# test_X = testX.reshape((testX.shape[0], 14, testX.shape[2]))
-# print(train_X.shape, trainY.shape, test_X.shape, trainY.shape)
+def split_sequence(seq, steps, out):
+    X, Y = list(), list()
+    for i in range(len(seq)):
+        end = i + steps
+        outi = end + out
+        if outi > len(seq)-1:
+            break
+        seqx, seqy = seq[i:end], column(seq[end:outi],1) # o arithmos tis stilsi pou thelo na kano tin provleppsi
+        X.append(seqx)
+        Y.append(seqy)
+    return np.array(X), np.array(Y)
 
 
-''' Fitting the data in LSTM Deep Learning model '''
+# split into samples
+X_train, Y_train = split_sequence(train, n_past, n_future)
+X_test, Y_test = split_sequence(test, n_past, n_future)
+X_train = X_train.reshape((Y_train.shape[0], X_train.shape[1], features))
+#print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
+
+
+
 model = Sequential()
-model.add(LSTM(100, input_shape=(trainX.shape[1], trainX.shape[2]),return_sequences=False))
+model.add(LSTM(100, input_shape=(X_train.shape[1], X_train.shape[2]),return_sequences=False))
 model.add(Dense(1))
-model.compile(loss='mae', optimizer='adam')
-history = model.fit(trainX, trainY, epochs=1000, batch_size=100, validation_data=(testX, testY), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
+model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
+history = model.fit(X_train, Y_train, epochs=1000, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
                     verbose=1, shuffle=False)
 
 
 
-#n_days_for_prediction=500  #let us predict past 15 days
-#yhat = model.predict(trainX[-n_days_for_prediction:])
-
-
-# yhat = model.predict(testX)
-
-yhat = model.predict(trainX)
+yhat = model.predict(X_train)
 prediction_copies = np.repeat(yhat, df_for_training.shape[1], axis=-1) # https://stackoverflow.com/questions/42997228/lstm-keras-error-valueerror-non-broadcastable-output-operand-with-shape-67704
 y_pred_future = scaler.inverse_transform(prediction_copies)[:,0]
 
-
-
-prediction_copies_Actual = np.repeat(trainY, df_for_training.shape[1], axis=-1) # https://stackoverflow.com/questions/42997228/lstm-keras-error-valueerror-non-broadcastable-output-operand-with-shape-67704
+prediction_copies_Actual = np.repeat(Y_train, df_for_training.shape[1], axis=-1)
 y_actual = scaler.inverse_transform(prediction_copies_Actual)[:,0]
 
 
@@ -125,12 +114,11 @@ pyplot.figure(figsize=(20,8))
 pyplot.plot(y_pred_future[:100], label='predict')
 pyplot.plot(y_actual[:100], label='true')
 pyplot.legend()
-pyplot.ylabel('Disk IO', size=15)
+pyplot.ylabel('CPU', size=15)
 pyplot.xlabel('Time step', size=15)
 pyplot.legend(fontsize=15)
 
 pyplot.show()
-
 
 pyplot.plot(history.history['loss'], label='train')
 pyplot.plot(history.history['val_loss'], label='test')
