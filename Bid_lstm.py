@@ -80,10 +80,10 @@ print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
 
 model = Sequential()
-model.add(Bidirectional(LSTM(180, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2]))))
+model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2]))))
 # model.add(RepeatVector(n_future))
-model.add(Bidirectional(LSTM(180,return_sequences=False)))
-# model.add(TimeDistributed(Dense(64, activation='relu')))
+model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=False)))
+# model.add(TimeDistributed(Dense(64, activation='relu'))) # For TimeDistributed see this https://stackoverflow.com/questions/45590240/lstm-and-cnn-valueerror-error-when-checking-target-expected-time-distributed
 # model.add(TimeDistributed(Dense(1)))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])

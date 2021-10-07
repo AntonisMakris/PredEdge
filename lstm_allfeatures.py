@@ -1,18 +1,9 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import pyplot
-from matplotlib.pylab import rcParams
-import seaborn as sns
 from keras.models import Sequential, load_model, save_model
 from keras.layers import Dense
 from keras.layers import LSTM
-import glob
-from datetime import datetime
-from keras.callbacks import EarlyStopping
-import time
-
-from numpy import concatenate
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error

@@ -4,6 +4,12 @@ from matplotlib import pyplot
 from keras.models import Sequential, load_model, save_model
 from keras.layers import Dense
 from keras.layers import LSTM
+from keras.layers import Bidirectional
+from keras.layers import TimeDistributed
+from keras.layers import RepeatVector
+from keras.layers import Flatten
+from keras.layers.convolutional import MaxPooling1D
+from keras.layers.convolutional import Conv1D
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
@@ -12,6 +18,7 @@ from sklearn.metrics import r2_score
 from math import sqrt
 import sys
 
+from tensorflow.python.keras.layers import Activation
 
 df = pd.read_csv('dataset.csv')
 # print(df.head())
@@ -75,17 +82,26 @@ print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
 
 
+# define model
 model = Sequential()
-model.add(LSTM(100, activation='relu', input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences=False))
+model.add(Conv1D(filters=32, kernel_size=1, activation='relu', input_shape=(X_train.shape[1], X_train.shape[2])))
+model.add(Conv1D(filters=32, kernel_size=2, activation='relu'))
+model.add(MaxPooling1D(pool_size=2))
+model.add(Flatten())
+model.add(RepeatVector(n_future))
+model.add(LSTM(200, activation='relu', return_sequences=False))
+# model.add(TimeDistributed(Dense(100, activation='relu')))
+# model.add(TimeDistributed(Dense(1)))
+model.add(Dense(100, activation='relu'))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
+
 history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
                     verbose=1, shuffle=False)
 
 
-
 yhat = model.predict(X_test)
-prediction_copies = np.repeat(yhat, df_for_training.shape[1], axis=-1) # https://stackoverflow.com/questions/42997228/lstm-keras-error-valueerror-non-broadcastable-output-operand-with-shape-67704
+prediction_copies = np.repeat(yhat, df_for_training.shape[1], axis=-1)
 y_pred_future = scaler.inverse_transform(prediction_copies)[:,0]
 
 prediction_copies_Actual = np.repeat(Y_test, df_for_training.shape[1], axis=-1)
