@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from numpy import concatenate
+from scipy import stats
 from matplotlib import pyplot
 from keras.models import Sequential, load_model, save_model
 from keras.layers import Dense
@@ -69,17 +73,19 @@ def split_sequence(seq, steps, out):
 # split into samples
 X_train, Y_train = split_sequence(train, n_past, n_future)
 X_test, Y_test = split_sequence(test, n_past, n_future)
-X_train = X_train.reshape((Y_train.shape[0], X_train.shape[1], features))
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], features))
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], features))
 
 print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
-
-
 model = Sequential()
 model.add(LSTM(100, activation='relu', input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences=False))
-model.add(Dense(1))
+if n_future == 1:
+    model.add(Dense(1))
+else:
+    model.add(Dense(n_future))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
-history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
+history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
                     verbose=1, shuffle=False)
 
 

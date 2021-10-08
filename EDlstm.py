@@ -7,6 +7,9 @@ from keras.layers import LSTM
 from keras.layers import Bidirectional
 from keras.layers import TimeDistributed
 from keras.layers import RepeatVector
+from keras.layers import Flatten
+from keras.layers.convolutional import MaxPooling1D
+from keras.layers.convolutional import Conv1D
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
@@ -15,7 +18,10 @@ from sklearn.metrics import r2_score
 from math import sqrt
 import sys
 
-from tensorflow.python.keras.layers import Activation
+from tensorflow.python.keras import Input, Model
+from tensorflow.python.keras.layers import Activation, Embedding
+from tensorflow.python.keras.losses import Huber
+from tensorflow.python.keras.optimizers import Adam
 
 df = pd.read_csv('dataset.csv')
 # print(df.head())
@@ -78,18 +84,21 @@ X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], features))
 
 print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
-
-
+# try:
 model = Sequential()
-model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2]))))
-# model.add(RepeatVector(n_future))
-model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=False)))
-# model.add(TimeDistributed(Dense(64, activation='relu'))) # For TimeDistributed see this https://stackoverflow.com/questions/45590240/lstm-and-cnn-valueerror-error-when-checking-target-expected-time-distributed
-# model.add(TimeDistributed(Dense(1)))
-model.add(Dense(1))
+model.add(LSTM(200, activation='relu', input_shape=(X_train.shape[1], X_train.shape[2])))
+model.add(RepeatVector( ))
+model.add(LSTM(200, activation='relu', return_sequences=True)) # TimeDistributed layers accept 3D so the return_sequences must be set to true. In case of Dense layers must be set to False
+model.add(TimeDistributed(Dense(100, activation='relu')))
+model.add(Flatten()) # This layer is responsible for transforming 3D, without it it does not work
+model.add(TimeDistributed(Dense(1)))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
-history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
+
+model.summary()
+history = model.fit(X_train, Y_train, epochs=200, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
                     verbose=1, shuffle=False)
+# except AssertionError as msg:
+#     print(msg)
 
 
 yhat = model.predict(X_test)

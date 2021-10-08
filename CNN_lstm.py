@@ -76,13 +76,15 @@ def split_sequence(seq, steps, out):
 # split into samples
 X_train, Y_train = split_sequence(train, n_past, n_future)
 X_test, Y_test = split_sequence(test, n_past, n_future)
-X_train = X_train.reshape((Y_train.shape[0], X_train.shape[1], features))
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], features))
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], features))
 
 print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
 
 
 # define model
+
 model = Sequential()
 model.add(Conv1D(filters=32, kernel_size=1, activation='relu', input_shape=(X_train.shape[1], X_train.shape[2])))
 model.add(Conv1D(filters=32, kernel_size=2, activation='relu'))
@@ -96,7 +98,7 @@ model.add(Dense(100, activation='relu'))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
 
-history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=10)],
+history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
                     verbose=1, shuffle=False)
 
 
