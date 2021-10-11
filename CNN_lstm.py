@@ -16,6 +16,7 @@ from sklearn.metrics import mean_absolute_error
 from keras.callbacks import EarlyStopping
 from sklearn.metrics import r2_score
 from math import sqrt
+from keras.layers import Flatten
 import sys
 
 from tensorflow.python.keras.layers import Activation
@@ -91,15 +92,19 @@ model.add(Conv1D(filters=32, kernel_size=2, activation='relu'))
 model.add(MaxPooling1D(pool_size=2))
 model.add(Flatten())
 model.add(RepeatVector(n_future))
-model.add(LSTM(200, activation='relu', return_sequences=False))
-# model.add(TimeDistributed(Dense(100, activation='relu')))
-# model.add(TimeDistributed(Dense(1)))
-model.add(Dense(100, activation='relu'))
+model.add(LSTM(200, activation='relu', return_sequences=True))
+model.add(TimeDistributed(Dense(100, activation='relu')))
+model.add(TimeDistributed(Dense(1)))
+model.add(Flatten())
+#model.add(Dense(100, activation='relu'))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
 
 history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
                     verbose=1, shuffle=False)
+
+
+
 
 
 yhat = model.predict(X_test)
