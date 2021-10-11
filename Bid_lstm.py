@@ -82,9 +82,9 @@ print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
 
 model = Sequential()
-model.add(Bidirectional(LSTM(200, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2]))))
+model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2]))))
 # model.add(RepeatVector(n_future))
-model.add(Bidirectional(LSTM(200, activation='relu', return_sequences=True)))
+model.add(Bidirectional(LSTM(180, activation='relu', return_sequences=True)))
 model.add(TimeDistributed(Dense(64, activation='relu'))) # For TimeDistributed see this https://stackoverflow.com/questions/45590240/lstm-and-cnn-valueerror-error-when-checking-target-expected-time-distributed
 model.add(TimeDistributed(Dense(1)))
 model.add(Flatten())
@@ -106,10 +106,10 @@ prediction_copies_Actual = np.repeat(Y_test, df_for_training.shape[1], axis=-1)
 y_actual = scaler.inverse_transform(prediction_copies_Actual)[:,0]
 
 
-''' Plotting the first 500 entries to see prediction '''
+# Plots
 pyplot.figure(figsize=(20,8))
-pyplot.plot(y_pred_future[:100], label='predict')
-pyplot.plot(y_actual[:100], label='true')
+pyplot.plot(y_pred_future[:100], label='prediction', color="r")
+pyplot.plot(y_actual[:100], label='actual', marker='.')
 pyplot.legend()
 pyplot.ylabel('CPU', size=15)
 pyplot.xlabel('Time step', size=15)
@@ -117,8 +117,8 @@ pyplot.legend(fontsize=15)
 
 pyplot.show()
 
-pyplot.plot(history.history['loss'], label='train')
-pyplot.plot(history.history['val_loss'], label='test')
+pyplot.plot(history.history['loss'], label='train', color="black")
+pyplot.plot(history.history['val_loss'], label='test',marker='.')
 pyplot.title('model loss',size=15)
 pyplot.ylabel('loss',size=15)
 pyplot.xlabel('epochs',size=15)
