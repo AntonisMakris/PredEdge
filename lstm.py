@@ -97,7 +97,7 @@ y_pred_future = scaler.inverse_transform(prediction_copies)[:,0]
 prediction_copies_Actual = np.repeat(Y_test, df_for_training.shape[1], axis=-1)
 y_actual = scaler.inverse_transform(prediction_copies_Actual)[:,0]
 
-
+# https://datascience.stackexchange.com/questions/88494/time-series-multi-step-generalization-from-single-step-model/88664#88664
 # Plots
 pyplot.figure(figsize=(20,8))
 pyplot.plot(y_pred_future[:100], label='prediction', color="r")

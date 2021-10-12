@@ -17,7 +17,6 @@ from keras.callbacks import EarlyStopping
 from sklearn.metrics import r2_score
 from math import sqrt
 import sys
-
 from tensorflow.python.keras import Input, Model
 from tensorflow.python.keras.layers import Activation, Embedding
 from tensorflow.python.keras.losses import Huber
