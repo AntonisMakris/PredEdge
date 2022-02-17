@@ -17,7 +17,7 @@ from math import sqrt
 import sys
 
 
-df = pd.read_csv('testdataset.csv')
+df = pd.read_csv('dataset.csv')
 # print(df.head())
 
 # Variables for training
@@ -84,7 +84,7 @@ if n_future == 1:
 else:
     model.add(Dense(n_future))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
-history = model.fit(X_train, Y_train, epochs=1000, batch_size=64, validation_data=(X_test, Y_test), #callbacks=[EarlyStopping(monitor='val_loss', patience=200)],
+history = model.fit(X_train, Y_train, epochs=500, batch_size=64, validation_data=(X_test, Y_test), #callbacks=[EarlyStopping(monitor='val_loss', patience=200)],
                     verbose=1, shuffle=False)
 
 
