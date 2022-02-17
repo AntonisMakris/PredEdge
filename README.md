@@ -1,9 +1,14 @@
 # PredEdge
-Resource Usage Prediction in Edge Computing using Neural Networks 
+Resource Usage Prediction in Edge Computing Infrastructures using Recurrent Neural Networks
 
+## RNN Architectures
+- LSTM
+- GRU
+- BRNN
+- CNN-LSTM
 
 #### Notes
 
-- this NN predict one step ahead
-- lstm_allfeatures does not have a target column, predicts everything in multivariate
-- attention to what you want to predict, it is hardcoded now some parts 
+- Step: 15, Future: 1
+- Attention to what you want to predict (column), it is hardcoded
+- lstm_allfeatures.py does not contains a target column, it predicts everything in Multivariate
