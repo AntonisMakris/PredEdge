@@ -18,7 +18,7 @@ import sys
 
 from tensorflow.python.keras.layers import Activation
 
-df = pd.read_csv('dataset.csv')
+df = pd.read_csv('testdataset.csv')
 # print(df.head())
 
 # Variables for training
@@ -48,8 +48,8 @@ Y_train = []
 X_test = []
 Y_test = []
 
-n_future = 1   # Number of days we want to look into the future based on the past days. -> # out
-n_past = 14    # Number of past days we want to use to predict the future. -> #step
+n_future = 1   # Number of days we want to look into the future based on the past days (Out).
+n_past = 14    # Number of past days we want to use to predict the future (Step).
 features = 3   # Number of features
 
 # x ram bandwodth
@@ -65,7 +65,7 @@ def split_sequence(seq, steps, out):
         outi = end + out
         if outi > len(seq)-1:
             break
-        seqx, seqy = seq[i:end], column(seq[end:outi],1) # o arithmos tis stilsi pou thelo na kano tin provleppsi
+        seqx, seqy = seq[i:end], column(seq[end:outi],1) # 1 the column number I want to make the prediction
         X.append(seqx)
         Y.append(seqy)
     return np.array(X), np.array(Y)
@@ -90,12 +90,8 @@ model.add(TimeDistributed(Dense(1)))
 model.add(Flatten())
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam', metrics=['mse', 'mae', 'mape'])
-history = model.fit(X_train, Y_train, epochs=100, batch_size=100, validation_data=(X_test, Y_test), callbacks=[EarlyStopping(monitor='val_loss', patience=20)],
+history = model.fit(X_train, Y_train, epochs=1000, batch_size=64, validation_data=(X_test, Y_test), #callbacks=[EarlyStopping(monitor='val_loss', patience=200)],
                     verbose=1, shuffle=False)
-
-
-
-
 
 
 yhat = model.predict(X_test)
@@ -134,5 +130,9 @@ rmse = sqrt(mse)
 print('Test Score: %.2f RMSE' % (rmse))
 r2 = r2_score(y_actual, y_pred_future)
 print('Test Score: %.2f R2' % (r2))
+
+f = open("BLSTM.txt", "w")
+f.write("MAE: "+ str(mae) + "\n"+"MSE:  "+str(mse)+"\n" + "RMSE:  "+str(rmse)+"\n" + "r2:  "+str(r2) +"\n")
+f.close()
 
 

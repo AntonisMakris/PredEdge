@@ -14,7 +14,7 @@ import sys
 
 
 
-df = pd.read_csv('dataset.csv')
+df = pd.read_csv('testdataset.csv')
 # print(df.head())
 
 #Separate dates for future plotting
@@ -32,8 +32,6 @@ df_for_training = df[cols].astype(float)
 # sns.heatmap(df.corr(),annot=True,cmap='viridis')
 # plt.title('Heatmap of co-relation between variables',fontsize=16)
 # plt.show()
-
-
 
 #dataset = df_for_training.disk_io.values
 #dataset = df_for_training.values
