@@ -49,7 +49,7 @@ X_test = []
 Y_test = []
 
 n_future = 1   # Number of days we want to look into the future based on the past days (Out).
-n_past = 14    # Number of past days we want to use to predict the future (Step).
+n_past = 15    # Number of past days we want to use to predict the future (Step).
 features = 3   # Number of features
 
 # x ram bandwodth
